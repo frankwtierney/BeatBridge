@@ -123,13 +123,13 @@ struct ContentView: View {
     // MARK: - Center Section
 
     private var centerSection: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             Spacer()
             Image("BeatBridgeLogo")
                 .resizable()
                 .scaledToFit()
                 .frame(maxWidth: .infinity)
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 0)
 
             LEDMeter(progress: overallProgress, segments: 20)
                 .fixedSize()

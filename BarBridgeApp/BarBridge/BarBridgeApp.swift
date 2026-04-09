@@ -14,7 +14,7 @@ struct BarBridgeApp: App {
     }
 }
 
-/// Fully borderless window — no title bar, no frame, just content.
+/// Transparent title bar with traffic lights visible, content goes edge-to-edge.
 struct TransparentWindow: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
@@ -24,18 +24,15 @@ struct TransparentWindow: NSViewRepresentable {
             window.backgroundColor = .clear
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
-            // Remove titled entirely — no system title bar at all
-            window.styleMask.remove(.titled)
+            // Keep .titled so traffic lights stay visible
+            window.styleMask.insert(.titled)
+            window.styleMask.insert(.closable)
+            window.styleMask.insert(.miniaturizable)
             window.styleMask.insert(.fullSizeContentView)
             window.styleMask.remove(.resizable)
             window.isMovableByWindowBackground = true
             window.level = .floating
-            // Remove the title bar separator line
             window.titlebarSeparatorStyle = .none
-            // Hide the standard window buttons (we'll draw our own)
-            window.standardWindowButton(.closeButton)?.isHidden = true
-            window.standardWindowButton(.miniaturizeButton)?.isHidden = true
-            window.standardWindowButton(.zoomButton)?.isHidden = true
         }
         return view
     }
