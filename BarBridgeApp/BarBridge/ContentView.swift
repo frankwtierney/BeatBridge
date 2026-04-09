@@ -325,16 +325,21 @@ struct ContentView: View {
 
                     Spacer()
 
-                    if file.isComplete, let output = file.outputPath {
+                    if file.isComplete {
                         Image(systemName: "line.3.horizontal")
                             .font(.system(size: 9))
                             .foregroundColor(.green.opacity(0.4))
-                            .onDrag { NSItemProvider(contentsOf: output)! }
                     }
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(RoundedRectangle(cornerRadius: 3).fill(Color.white.opacity(0.02)))
+                .contentShape(Rectangle())
+                .if(file.isComplete && file.outputPath != nil) { view in
+                    view.onDrag {
+                        NSItemProvider(contentsOf: file.outputPath!)!
+                    }
+                }
             }
         }
     }
