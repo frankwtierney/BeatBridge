@@ -74,6 +74,17 @@ struct ContentView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.gray.opacity(0.3), lineWidth: 1)
             )
+            .overlay(alignment: .topTrailing) {
+                Button(action: { NSApplication.shared.terminate(nil) }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundColor(.gray.opacity(0.5))
+                        .frame(width: 16, height: 16)
+                        .background(Circle().fill(Color.white.opacity(0.05)))
+                }
+                .buttonStyle(.plain)
+                .padding(6)
+            }
 
             // === FILE LIST ===
             if !engine.files.isEmpty {
@@ -121,18 +132,11 @@ struct ContentView: View {
     private var centerSection: some View {
         VStack(spacing: 8) {
             Spacer()
-            HStack(spacing: 8) {
-                Text("BEAT")
-                    .font(.system(size: 16, weight: .heavy, design: .rounded))
-                    .foregroundColor(.white)
-                Image(systemName: "bridge.fill")
-                    .font(.system(size: 11))
-                    .foregroundColor(.purple)
-                Text("BRIDGE")
-                    .font(.system(size: 16, weight: .heavy, design: .rounded))
-                    .foregroundColor(.white)
-            }
-            .fixedSize()
+            // Logo image (falls back to text if image not found)
+            Image("BeatBridgeLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 50)
 
             LEDMeter(progress: overallProgress, segments: 20)
                 .fixedSize()
