@@ -84,9 +84,11 @@ class ProcessingEngine: ObservableObject {
             "--dest-sr", String(config.destinationSampleRate),
         ]
 
-        // Add the project to PYTHONPATH so barbridge module is found
+        // Add the project to PYTHONPATH and ensure Homebrew binaries are on PATH
         var env = ProcessInfo.processInfo.environment
         env["PYTHONPATH"] = barbridgeModule
+        let existingPath = env["PATH"] ?? "/usr/bin:/bin"
+        env["PATH"] = "/opt/homebrew/bin:/usr/local/bin:\(existingPath)"
         process.environment = env
 
         let stdoutPipe = Pipe()
