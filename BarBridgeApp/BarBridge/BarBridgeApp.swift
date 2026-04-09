@@ -14,7 +14,7 @@ struct BarBridgeApp: App {
     }
 }
 
-/// Makes the window borderless, transparent, and draggable.
+/// Makes the window transparent with traffic lights but no title bar frame.
 struct TransparentWindow: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
@@ -24,8 +24,12 @@ struct TransparentWindow: NSViewRepresentable {
             window.backgroundColor = .clear
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
-            window.styleMask.remove(.titled)
+            // Keep .titled so traffic lights (red/yellow/green) stay visible
+            window.styleMask.insert(.titled)
+            window.styleMask.insert(.closable)
+            window.styleMask.insert(.miniaturizable)
             window.styleMask.insert(.fullSizeContentView)
+            window.styleMask.remove(.resizable)
             window.isMovableByWindowBackground = true
             window.level = .floating
         }
@@ -35,9 +39,6 @@ struct TransparentWindow: NSViewRepresentable {
     func updateNSView(_ nsView: NSView, context: Context) {}
 }
 
-/// Handles app-level setup.
 class AppDelegate: NSObject, NSApplicationDelegate {
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        // Keep running when window is closed (optional)
-    }
+    func applicationDidFinishLaunching(_ notification: Notification) {}
 }

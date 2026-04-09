@@ -74,17 +74,6 @@ struct ContentView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.gray.opacity(0.3), lineWidth: 1)
             )
-            .overlay(alignment: .topTrailing) {
-                Button(action: { NSApplication.shared.terminate(nil) }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 8, weight: .bold))
-                        .foregroundColor(.gray.opacity(0.5))
-                        .frame(width: 16, height: 16)
-                        .background(Circle().fill(Color.white.opacity(0.05)))
-                }
-                .buttonStyle(.plain)
-                .padding(6)
-            }
 
             // === FILE LIST ===
             if !engine.files.isEmpty {
@@ -130,13 +119,13 @@ struct ContentView: View {
     // MARK: - Center Section
 
     private var centerSection: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             Spacer()
-            // Logo image (falls back to text if image not found)
             Image("BeatBridgeLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(height: 50)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 4)
 
             LEDMeter(progress: overallProgress, segments: 20)
                 .fixedSize()
