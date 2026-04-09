@@ -225,18 +225,30 @@ struct ContentView: View {
 
     // MARK: - Drag Out Section (square)
 
+    private var hasOutput: Bool { latestCompleteFile != nil }
+
     private var dragOutSection: some View {
         VStack(spacing: 6) {
             Image(systemName: "arrow.right.circle.fill")
                 .font(.system(size: 24))
-                .foregroundColor(latestCompleteFile != nil ? .green : .gray.opacity(0.2))
+                .foregroundColor(hasOutput ? .blue : .gray.opacity(0.2))
 
-            Text("DRAG\nOUT")
-                .font(.system(size: 9, weight: .heavy, design: .monospaced))
-                .foregroundColor(latestCompleteFile != nil ? .green : .gray.opacity(0.2))
-                .multilineTextAlignment(.center)
+            Text("OUT")
+                .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                .foregroundColor(hasOutput ? .blue : .gray.opacity(0.2))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(hasOutput ? Color.blue.opacity(0.05) : Color.clear)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .strokeBorder(
+                            hasOutput ? Color.blue.opacity(0.5) : Color.gray.opacity(0.15),
+                            style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])
+                        )
+                )
+        )
         .if(latestCompleteFile?.outputPath != nil) { view in
             view.onDrag {
                 NSItemProvider(contentsOf: latestCompleteFile!.outputPath!)!
