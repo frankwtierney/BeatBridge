@@ -29,11 +29,20 @@ class ProcessingEngine: ObservableObject {
         } ?? NSHomeDirectory() + "/Desktop/BeatBridge"
     }
 
+    private let ffmpegPath: String = {
+        let candidates = [
+            "/opt/homebrew/bin/ffmpeg",
+            "/usr/local/bin/ffmpeg",
+            "/usr/bin/ffmpeg",
+        ]
+        return candidates.first { FileManager.default.fileExists(atPath: $0) } ?? "ffmpeg"
+    }()
+
     func checkDependencies() {
-        // Check FFmpeg
+        // Check FFmpeg using direct path
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-        process.arguments = ["ffmpeg", "-version"]
+        process.executableURL = URL(fileURLWithPath: ffmpegPath)
+        process.arguments = ["-version"]
         let pipe = Pipe()
         process.standardOutput = pipe
         process.standardError = FileHandle.nullDevice
