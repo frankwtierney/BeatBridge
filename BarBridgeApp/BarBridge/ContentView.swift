@@ -128,7 +128,8 @@ struct ContentView: View {
             Image("BeatBridgeLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(height: 70)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 0)
 
             LEDMeter(progress: overallProgress, segments: 20)
                 .fixedSize()
