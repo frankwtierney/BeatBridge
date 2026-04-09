@@ -225,7 +225,11 @@ struct ContentView: View {
 
     // MARK: - Drag Out Section (square)
 
-    private var hasOutput: Bool { latestCompleteFile != nil }
+    private var hasOutput: Bool { !completedFiles.isEmpty }
+
+    private var completedFiles: [ProcessedFile] {
+        engine.files.filter { $0.isComplete && $0.outputPath != nil }
+    }
 
     private var dragOutSection: some View {
         VStack(spacing: 6) {
@@ -249,9 +253,28 @@ struct ContentView: View {
                         )
                 )
         )
-        .if(latestCompleteFile?.outputPath != nil) { view in
+        .if(hasOutput) { view in
             view.onDrag {
-                NSItemProvider(contentsOf: latestCompleteFile!.outputPath!)!
+                // Create a provider with the first file
+                let files = completedFiles.compactMap(\.outputPath)
+                let provider = NSItemProvider(contentsOf: files.first!)!
+
+                // Register all additional files
+                for url in files.dropFirst() {
+                    provider.registerFileRepresentation(
+                        forTypeIdentifier: "public.audio",
+                        visibility: .all
+                    ) { completion in
+                        completion(url, false, nil)
+                        return nil
+                    }
+                }
+
+                // Also write all URLs to pasteboard for apps that read multiple items
+                let pasteboard = NSPasteboard(name: .drag)
+                pasteboard.writeObjects(files.map { $0 as NSURL })
+
+                return provider
             }
         }
     }
