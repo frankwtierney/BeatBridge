@@ -34,13 +34,12 @@ struct ContentView: View {
 
                 rackDivider
 
-                // RATE KNOB
-                RateKnobView(
-                    label: "Rate (Hz)",
+                // RATE
+                RateSelectorView(
                     value: $config.destinationSampleRate,
                     values: SessionConfig.sampleRates
                 )
-                .frame(width: 150, height: rackHeight)
+                .frame(width: 110, height: rackHeight)
 
                 rackDivider
 
