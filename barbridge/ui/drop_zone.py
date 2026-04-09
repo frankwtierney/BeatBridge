@@ -44,7 +44,7 @@ def create_drop_zone(
         height=height,
         border=ft.border.all(2, ft.Colors.GREY_600),
         border_radius=12,
-        alignment=ft.alignment.center,
+        alignment=ft.Alignment(0, 0),
         bgcolor=ft.Colors.with_opacity(0.05, ft.Colors.WHITE),
     )
 
