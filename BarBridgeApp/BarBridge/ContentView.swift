@@ -74,6 +74,20 @@ struct ContentView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.gray.opacity(0.3), lineWidth: 1)
             )
+            .overlay(alignment: .topLeading) {
+                // Custom traffic lights — part of the rack
+                HStack(spacing: 6) {
+                    TrafficLight(color: .red, action: {
+                        NSApplication.shared.terminate(nil)
+                    })
+                    TrafficLight(color: .yellow, action: {
+                        NSApplication.shared.keyWindow?.miniaturize(nil)
+                    })
+                    TrafficLight(color: .green, action: {})
+                }
+                .padding(.leading, 10)
+                .padding(.top, 8)
+            }
 
             // === FILE LIST ===
             if !engine.files.isEmpty {
@@ -388,6 +402,27 @@ struct ContentView: View {
                 }
             }
         }
+    }
+}
+
+/// Custom traffic light button — integrated into the rack UI.
+struct TrafficLight: View {
+    let color: Color
+    let action: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            Circle()
+                .fill(isHovered ? color : color.opacity(0.7))
+                .frame(width: 12, height: 12)
+                .overlay(
+                    Circle()
+                        .stroke(color.opacity(0.3), lineWidth: 0.5)
+                )
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
     }
 }
 
