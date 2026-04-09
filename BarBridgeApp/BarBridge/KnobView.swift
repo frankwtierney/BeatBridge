@@ -7,7 +7,7 @@ struct RateSelectorView: View {
     let values: [Int]
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 5) {
             Spacer()
 
             // Label with icon
@@ -39,6 +39,7 @@ struct RateSelectorView: View {
                     )
                 }
             }
+            .padding(.top, 2)
 
             Spacer()
         }

@@ -30,7 +30,9 @@ struct ContentView: View {
                 // IN — square drop zone
                 inSection
                     .frame(width: rackHeight, height: rackHeight)
-                    .padding(6)
+                    .padding(.vertical, 6)
+                    .padding(.leading, 12)
+                    .padding(.trailing, 6)
 
                 rackDivider
 
@@ -65,7 +67,9 @@ struct ContentView: View {
                 // DRAG OUT — square
                 dragOutSection
                     .frame(width: rackHeight, height: rackHeight)
-                    .padding(6)
+                    .padding(.vertical, 6)
+                    .padding(.trailing, 12)
+                    .padding(.leading, 6)
             }
             .frame(height: rackHeight + 24)
             .background(rackBackground)
@@ -119,7 +123,7 @@ struct ContentView: View {
     // MARK: - Center Section
 
     private var centerSection: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 10) {
             Spacer()
             Image("BeatBridgeLogo")
                 .resizable()
@@ -136,7 +140,7 @@ struct ContentView: View {
     // MARK: - BPM Section (click to type)
 
     private var bpmSection: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 5) {
             Spacer()
             HStack(spacing: 4) {
                 Image(systemName: "metronome.fill")
@@ -174,6 +178,7 @@ struct ContentView: View {
                 RackButton(label: "−") { adjustBPM(-1) }
                 RackButton(label: "+") { adjustBPM(1) }
             }
+            .padding(.top, 2)
             Spacer()
         }
     }
@@ -181,7 +186,7 @@ struct ContentView: View {
     // MARK: - START Section (M.B — click to type)
 
     private var startSection: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 5) {
             Spacer()
             HStack(spacing: 4) {
                 Image(systemName: "play.fill")
@@ -219,6 +224,7 @@ struct ContentView: View {
                 RackButton(label: "−") { adjustStart(-1) }
                 RackButton(label: "+") { adjustStart(1) }
             }
+            .padding(.top, 2)
             Spacer()
         }
     }
