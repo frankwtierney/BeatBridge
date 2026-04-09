@@ -8,13 +8,13 @@ class SessionConfig: ObservableObject {
     @Published var beatsPerBar: Int = 4
     @Published var beatValue: Int = 4
     @Published var destinationSampleRate: Int = 48000
-    @Published var startTimeSeconds: Double = 0.0
+    @Published var barNumber: Int = 1
+    @Published var beatNumber: Int = 1
 
     var timeSigLabel: String { "\(beatsPerBar)/\(beatValue)" }
 
-    var barDuration: Double {
-        (60.0 / bpm) * Double(beatsPerBar)
-    }
+    /// Bar position label for filenames: "M3B1" format
+    var barPositionLabel: String { "M\(barNumber)B\(beatNumber)" }
 
     static let sampleRates = [44100, 48000, 88200, 96000]
     static let timeSignatures: [(Int, Int)] = [(3, 4), (4, 4), (5, 4), (6, 8), (7, 8)]

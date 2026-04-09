@@ -48,12 +48,23 @@ struct SettingsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Start (seconds)").font(.caption).foregroundColor(.secondary)
-                    TextField("Start", value: $config.startTimeSeconds, format: .number)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 120)
+                    Text("Bar Position").font(.caption).foregroundColor(.secondary)
+                    HStack(spacing: 4) {
+                        TextField("Bar", value: $config.barNumber, format: .number)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 50)
+                        Text(".").foregroundColor(.secondary)
+                        TextField("Beat", value: $config.beatNumber, format: .number)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 50)
+                    }
                 }
             }
+
+            // Preview of the label
+            Text("Tag: \(config.barPositionLabel) · \(Int(config.bpm))BPM")
+                .font(.caption2)
+                .foregroundColor(.green.opacity(0.8))
         }
     }
 }

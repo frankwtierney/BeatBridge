@@ -89,7 +89,7 @@ class ProcessingEngine: ObservableObject {
             inputURL.path,
             "--bpm", String(config.bpm),
             "--time-sig", "\(config.beatsPerBar)/\(config.beatValue)",
-            "--start", String(config.startTimeSeconds),
+            "--bar-pos", config.barPositionLabel,
             "--dest-sr", String(config.destinationSampleRate),
         ]
 
