@@ -79,7 +79,7 @@ struct ContentView: View {
             }
         }
         .padding(10)
-        .frame(width: 820)
+        .frame(width: 920)
         .onAppear {
             engine.checkDependencies()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -144,13 +144,11 @@ struct ContentView: View {
                     .font(.system(size: 16, weight: .heavy, design: .rounded))
                     .foregroundColor(.white)
             }
+            .fixedSize()
 
-            // Progress meter with explicit padding
-            VStack(spacing: 5) {
-                LEDMeter(progress: overallProgress, segments: 20)
-                    .padding(.horizontal, 4)
-                RackLabel(text: "Progress")
-            }
+            // Progress meter
+            LEDMeter(progress: overallProgress, segments: 20)
+                .fixedSize()
         }
     }
 
