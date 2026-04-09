@@ -59,7 +59,7 @@ class ExportHandle:
                 spacing=8,
             ),
             padding=12,
-            border=ft.border.all(1, ft.Colors.GREEN_800),
+            border=ft.Border.all(width=1, color=ft.Colors.GREEN_800),
             border_radius=8,
             bgcolor=ft.Colors.with_opacity(0.08, ft.Colors.GREEN),
             visible=False,
@@ -73,24 +73,20 @@ class ExportHandle:
         self._output_path = output_path
         self._filename_text.value = output_path.name
         self._container.visible = True
-        self._filename_text.update()
-        self._container.update()
 
     def hide(self) -> None:
         self._output_path = None
         self._container.visible = False
-        self._container.update()
 
-    def _reveal_in_finder(self, e: ft.ControlEvent) -> None:
+    def _reveal_in_finder(self, e) -> None:
         if self._output_path and self._output_path.exists():
             if platform.system() == "Darwin":
                 subprocess.run(["open", "-R", str(self._output_path)])
             elif platform.system() == "Linux":
                 subprocess.run(["xdg-open", str(self._output_path.parent)])
 
-    def _copy_path(self, e: ft.ControlEvent) -> None:
+    def _copy_path(self, e) -> None:
         if self._output_path and self._page:
             self._page.set_clipboard(str(self._output_path))
             self._copy_button.icon = ft.Icons.CHECK
             self._copy_button.icon_color = ft.Colors.GREEN_400
-            self._copy_button.update()

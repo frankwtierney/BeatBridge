@@ -54,7 +54,6 @@ class StatusPanel:
     def set_progress(self, stage: str, value: float) -> None:
         self._progress_bar.value = value
         self._stage_text.value = stage
-
         if value >= 1.0:
             self._indicator.bgcolor = ft.Colors.GREEN_400
             self._progress_bar.color = ft.Colors.GREEN_400
@@ -64,13 +63,8 @@ class StatusPanel:
         else:
             self._indicator.bgcolor = ft.Colors.GREY_600
 
-        self._progress_bar.update()
-        self._stage_text.update()
-        self._indicator.update()
-
     def set_details(self, text: str) -> None:
         self._detail_text.value = text
-        self._detail_text.update()
 
     def set_error(self, message: str) -> None:
         self._indicator.bgcolor = ft.Colors.RED_400
@@ -79,10 +73,6 @@ class StatusPanel:
         self._stage_text.value = "Error"
         self._stage_text.color = ft.Colors.RED_400
         self._detail_text.value = message
-        self._progress_bar.update()
-        self._stage_text.update()
-        self._indicator.update()
-        self._detail_text.update()
 
     def reset(self) -> None:
         self._progress_bar.value = 0
@@ -91,7 +81,3 @@ class StatusPanel:
         self._stage_text.value = "Ready"
         self._stage_text.color = ft.Colors.GREY_400
         self._detail_text.value = ""
-        self._progress_bar.update()
-        self._stage_text.update()
-        self._indicator.update()
-        self._detail_text.update()

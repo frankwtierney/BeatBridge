@@ -30,7 +30,7 @@ class SyncControls:
         )
 
         time_sig_options = [
-            ft.dropdown.Option(f"{n}/{d}") for n, d in TIME_SIGNATURES
+            ft.DropdownOption(key=f"{n}/{d}", text=f"{n}/{d}") for n, d in TIME_SIGNATURES
         ]
         self.time_sig_dropdown = ft.Dropdown(
             label="Time Sig",
@@ -41,7 +41,7 @@ class SyncControls:
         )
 
         sr_options = [
-            ft.dropdown.Option(str(sr)) for sr in SAMPLE_RATES
+            ft.DropdownOption(key=str(sr), text=str(sr)) for sr in SAMPLE_RATES
         ]
         self.sample_rate_dropdown = ft.Dropdown(
             label="Dest. Rate (Hz)",
@@ -79,7 +79,7 @@ class SyncControls:
             spacing=8,
         )
 
-    def _handle_change(self, e: ft.ControlEvent) -> None:
+    def _handle_change(self, e) -> None:
         if self._on_change:
             self._on_change()
 

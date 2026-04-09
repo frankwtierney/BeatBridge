@@ -25,7 +25,7 @@ from barbridge.utils.permissions import get_permission_status_message, is_macos
 
 def run_app() -> None:
     """Launch the BarBridge GUI application."""
-    ft.app(target=_main)
+    ft.run(target=_main)
 
 
 def _main(page: ft.Page) -> None:
@@ -92,22 +92,19 @@ def _main(page: ft.Page) -> None:
         on_file_dropped=on_file_dropped,
     )
 
-    # File picker for browse-button fallback
-    file_picker = ft.FilePicker(
-        on_result=lambda e: (
-            on_file_dropped(Path(e.files[0].path))
-            if e.files else None
-        ),
-    )
-    page.overlay.append(file_picker)
+    # Browse button with async file picker (Flet 0.84+ API)
+    async def browse_clicked(_):
+        files = await ft.FilePicker().pick_files(
+            dialog_title="Select audio file",
+            allowed_extensions=["wav", "aif", "aiff", "mid", "midi"],
+        )
+        if files:
+            on_file_dropped(Path(files[0].path))
 
     browse_button = ft.TextButton(
         "or Browse Files",
         icon=ft.Icons.FOLDER_OPEN,
-        on_click=lambda _: file_picker.pick_files(
-            dialog_title="Select audio file",
-            allowed_extensions=["wav", "aif", "aiff", "mid", "midi"],
-        ),
+        on_click=browse_clicked,
     )
 
     # Dependency status
@@ -129,10 +126,9 @@ def _main(page: ft.Page) -> None:
     # Cache info & purge button
     config = SessionConfig()
 
-    def purge_cache(_: ft.ControlEvent) -> None:
+    def purge_cache(_) -> None:
         purge_all(config.cache_dir)
         cache_label.value = "Cache: 0 files"
-        page.update()
 
     cache_count = cache_file_count(config.cache_dir)
     cache_label = ft.Text(f"Cache: {cache_count} files", size=10, color=ft.Colors.GREY_500)
@@ -150,7 +146,6 @@ def _main(page: ft.Page) -> None:
     page.add(
         ft.Column(
             [
-                # Title
                 ft.Text(
                     WINDOW_TITLE,
                     size=22,
@@ -164,24 +159,13 @@ def _main(page: ft.Page) -> None:
                     text_align=ft.TextAlign.CENTER,
                 ),
                 ft.Divider(height=1, color=ft.Colors.GREY_800),
-
-                # Controls
                 controls.build(),
                 ft.Divider(height=1, color=ft.Colors.GREY_800),
-
-                # Drop Zone (OS-level — receives files from Logic, Finder, etc.)
                 dropzone,
                 browse_button,
-
-                # Status
                 status_panel.build(),
-
-                # Export Handle
                 export_handle.build(),
-
                 ft.Divider(height=1, color=ft.Colors.GREY_800),
-
-                # Footer
                 ft.Row(
                     dep_items,
                     alignment=ft.MainAxisAlignment.CENTER,
