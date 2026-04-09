@@ -7,7 +7,6 @@ struct ContentView: View {
     @State private var isHovering = false
     @State private var dropStatus = ""
 
-    // Editable string bindings for LED displays
     @State private var bpmText = "120"
     @State private var barText = "1.1"
 
@@ -26,7 +25,8 @@ struct ContentView: View {
             HStack(spacing: 0) {
                 // IN
                 inSection
-                    .frame(width: 90)
+                    .frame(width: 100)
+                    .padding(.horizontal, 6)
 
                 rackDivider
 
@@ -36,52 +36,36 @@ struct ContentView: View {
                     value: $config.destinationSampleRate,
                     values: SessionConfig.sampleRates
                 )
-                .frame(width: 100)
-                .padding(.vertical, 8)
+                .frame(width: 160)
 
                 rackDivider
 
                 // CENTER: Title + Progress
                 centerSection
-                    .padding(.horizontal, 16)
-                    .frame(minWidth: 220)
+                    .padding(.horizontal, 20)
 
                 rackDivider
 
                 // BPM
-                VStack(spacing: 6) {
-                    LEDDisplay("BPM", text: $bpmText, width: 85, fontSize: 30)
-                    HStack(spacing: 6) {
-                        RackButton(label: "−") { adjustBPM(-1) }
-                        RackButton(label: "+") { adjustBPM(1) }
-                    }
-                }
-                .frame(width: 100)
-                .padding(.vertical, 8)
-                .onChange(of: bpmText) { _ in syncBPMFromText() }
+                bpmSection
+                    .frame(width: 110)
+                    .padding(.horizontal, 4)
 
                 rackDivider
 
                 // START B.M
-                VStack(spacing: 6) {
-                    LEDDisplay("Start B.M", text: $barText, width: 85, fontSize: 30)
-                    HStack(spacing: 6) {
-                        RackButton(label: "B−") { adjustBar(-1) }
-                        RackButton(label: "B+") { adjustBar(1) }
-                    }
-                }
-                .frame(width: 100)
-                .padding(.vertical, 8)
-                .onChange(of: barText) { _ in syncBarFromText() }
+                startSection
+                    .frame(width: 110)
+                    .padding(.horizontal, 4)
 
                 rackDivider
 
                 // DRAG OUT
                 dragOutSection
                     .frame(width: 80)
+                    .padding(.horizontal, 6)
             }
-            .padding(.vertical, 12)
-            .padding(.horizontal, 6)
+            .padding(.vertical, 16)
             .background(rackBackground)
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay(
@@ -91,12 +75,11 @@ struct ContentView: View {
 
             // === FILE LIST ===
             if !engine.files.isEmpty {
-                fileList
-                    .padding(.top, 6)
+                fileList.padding(.top, 6)
             }
         }
         .padding(10)
-        .frame(width: 780)
+        .frame(width: 820)
         .onAppear {
             engine.checkDependencies()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -108,36 +91,36 @@ struct ContentView: View {
     // MARK: - IN Section
 
     private var inSection: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
+            Spacer()
             Image(systemName: "waveform.badge.plus")
-                .font(.system(size: 24))
+                .font(.system(size: 28))
                 .foregroundColor(isHovering ? .blue : .green)
 
             Text("IN")
-                .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                .font(.system(size: 12, weight: .heavy, design: .monospaced))
                 .foregroundColor(isHovering ? .blue : .green)
 
             if !dropStatus.isEmpty {
                 Text(dropStatus)
-                    .font(.system(size: 7))
+                    .font(.system(size: 8))
                     .foregroundColor(.orange)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
             }
+            Spacer()
         }
-        .frame(maxHeight: .infinity)
-        .padding(.horizontal, 8)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(isHovering ? Color.blue.opacity(0.1) : Color.clear)
+            RoundedRectangle(cornerRadius: 8)
+                .fill(isHovering ? Color.blue.opacity(0.1) : Color.green.opacity(0.02))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: 8)
                         .strokeBorder(
                             isHovering ? Color.blue.opacity(0.6) : Color.green.opacity(0.25),
                             style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])
                         )
                 )
-                .padding(4)
         )
         .onDrop(of: [.item], isTargeted: $isHovering) { providers in
             handleDrop(providers)
@@ -148,7 +131,8 @@ struct ContentView: View {
     // MARK: - Center Section
 
     private var centerSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
+            // Title
             HStack(spacing: 8) {
                 Text("BEAT")
                     .font(.system(size: 16, weight: .heavy, design: .rounded))
@@ -161,27 +145,103 @@ struct ContentView: View {
                     .foregroundColor(.white)
             }
 
-            LEDMeter(progress: overallProgress, segments: 24)
+            // Progress meter with explicit padding
+            VStack(spacing: 5) {
+                LEDMeter(progress: overallProgress, segments: 20)
+                    .padding(.horizontal, 4)
+                RackLabel(text: "Progress")
+            }
+        }
+    }
 
-            RackLabel(text: "Progress")
+    // MARK: - BPM Section
+
+    private var bpmSection: some View {
+        VStack(spacing: 6) {
+            // Label with metronome icon
+            HStack(spacing: 4) {
+                Image(systemName: "metronome.fill")
+                    .font(.system(size: 9))
+                    .foregroundColor(.gray)
+                RackLabel(text: "BPM")
+            }
+
+            // Seven-segment display
+            ZStack {
+                SevenSegmentDisplay(bpmText, height: 28, color: .green)
+            }
+            .frame(width: 90, height: 44)
+            .background(
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.black)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+                    )
+                    .shadow(color: .green.opacity(0.05), radius: 6)
+            )
+            .onTapGesture { /* TODO: click to edit */ }
+
+            // +/- buttons
+            HStack(spacing: 6) {
+                RackButton(label: "−") { adjustBPM(-1) }
+                RackButton(label: "+") { adjustBPM(1) }
+            }
+        }
+    }
+
+    // MARK: - START Section
+
+    private var startSection: some View {
+        VStack(spacing: 6) {
+            // Label with playhead icon
+            HStack(spacing: 4) {
+                Image(systemName: "play.fill")
+                    .font(.system(size: 8))
+                    .foregroundColor(.gray)
+                RackLabel(text: "Start B.M")
+            }
+
+            // Seven-segment display
+            ZStack {
+                SevenSegmentDisplay(barText, height: 28, color: .green)
+            }
+            .frame(width: 90, height: 44)
+            .background(
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.black)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+                    )
+                    .shadow(color: .green.opacity(0.05), radius: 6)
+            )
+            .onTapGesture { /* TODO: click to edit */ }
+
+            // B+/B- buttons
+            HStack(spacing: 6) {
+                RackButton(label: "B−") { adjustBar(-1) }
+                RackButton(label: "B+") { adjustBar(1) }
+            }
         }
     }
 
     // MARK: - Drag Out Section
 
     private var dragOutSection: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
+            Spacer()
             Image(systemName: "arrow.right.circle.fill")
-                .font(.system(size: 24))
-                .foregroundColor(latestCompleteFile != nil ? .green : .gray.opacity(0.25))
+                .font(.system(size: 28))
+                .foregroundColor(latestCompleteFile != nil ? .green : .gray.opacity(0.2))
 
             Text("DRAG\nOUT")
-                .font(.system(size: 9, weight: .heavy, design: .monospaced))
-                .foregroundColor(latestCompleteFile != nil ? .green : .gray.opacity(0.25))
+                .font(.system(size: 10, weight: .heavy, design: .monospaced))
+                .foregroundColor(latestCompleteFile != nil ? .green : .gray.opacity(0.2))
                 .multilineTextAlignment(.center)
+            Spacer()
         }
-        .frame(maxHeight: .infinity)
-        .padding(.horizontal, 8)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .if(latestCompleteFile?.outputPath != nil) { view in
             view.onDrag {
                 NSItemProvider(contentsOf: latestCompleteFile!.outputPath!)!
@@ -195,12 +255,12 @@ struct ContentView: View {
         Rectangle()
             .fill(
                 LinearGradient(
-                    colors: [Color.gray.opacity(0.05), Color.gray.opacity(0.2), Color.gray.opacity(0.05)],
+                    colors: [Color.gray.opacity(0.03), Color.gray.opacity(0.2), Color.gray.opacity(0.03)],
                     startPoint: .top, endPoint: .bottom
                 )
             )
             .frame(width: 1)
-            .padding(.vertical, 6)
+            .padding(.vertical, 8)
     }
 
     // MARK: - File List
@@ -229,10 +289,7 @@ struct ContentView: View {
                         .lineLimit(1)
 
                     if case .error(let msg) = file.status {
-                        Text(msg)
-                            .font(.system(size: 9))
-                            .foregroundColor(.red)
-                            .lineLimit(1)
+                        Text(msg).font(.system(size: 9)).foregroundColor(.red).lineLimit(1)
                     }
 
                     Spacer()
@@ -260,7 +317,7 @@ struct ContentView: View {
         )
     }
 
-    // MARK: - BPM / Bar Helpers
+    // MARK: - Helpers
 
     private func adjustBPM(_ delta: Double) {
         config.bpm = max(1, min(999, config.bpm + delta))
@@ -272,31 +329,13 @@ struct ContentView: View {
         barText = config.barPositionDisplay
     }
 
-    private func syncBPMFromText() {
-        if let val = Double(bpmText), val >= 1, val <= 999 {
-            config.bpm = val
-        }
-    }
-
-    private func syncBarFromText() {
-        let parts = barText.split(separator: ".")
-        if let bar = Int(parts.first ?? "") {
-            config.barNumber = max(1, bar)
-        }
-        if parts.count > 1, let beat = Int(parts.last ?? "") {
-            config.beatNumber = max(1, beat)
-        }
-    }
-
     // MARK: - Drop Handling
 
     private func handleDrop(_ providers: [NSItemProvider]) {
         dropStatus = "Receiving..."
-
         for provider in providers {
             let audioTypes: [UTType] = [.aiff, .wav, .audio, .midi]
             var handled = false
-
             for type in audioTypes {
                 if provider.hasItemConformingToTypeIdentifier(type.identifier) {
                     handled = true
@@ -312,16 +351,13 @@ struct ContentView: View {
                                     engine.processFile(url: dest, config: config)
                                 }
                             } catch {
-                                DispatchQueue.main.async {
-                                    dropStatus = "Error"
-                                }
+                                DispatchQueue.main.async { dropStatus = "Error" }
                             }
                         }
                     }
                     break
                 }
             }
-
             if !handled && provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
                 provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { data, error in
                     guard let data = data as? Data,
@@ -338,14 +374,9 @@ struct ContentView: View {
     }
 }
 
-// Conditional modifier helper
 extension View {
     @ViewBuilder
     func `if`<Transform: View>(_ condition: Bool, transform: (Self) -> Transform) -> some View {
-        if condition {
-            transform(self)
-        } else {
-            self
-        }
+        if condition { transform(self) } else { self }
     }
 }

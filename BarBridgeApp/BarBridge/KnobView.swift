@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Rotary knob that snaps to fixed positions with click-to-dropdown.
+/// Rotary knob that snaps to fixed rate positions with labels around the arc,
+/// like a compressor ratio knob.
 struct RateKnobView: View {
     let label: String
     @Binding var value: Int
@@ -14,6 +15,12 @@ struct RateKnobView: View {
 
     private let startAngle: Double = 225
     private let totalSweep: Double = 270
+    private let knobRadius: CGFloat = 70
+
+    private func angleForIndex(_ i: Int) -> Double {
+        guard values.count > 1 else { return startAngle }
+        return startAngle - Double(i) / Double(values.count - 1) * totalSweep
+    }
 
     private var normalizedValue: Double {
         guard values.count > 1 else { return 0 }
@@ -25,30 +32,44 @@ struct RateKnobView: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 4) {
             RackLabel(text: label)
 
             ZStack {
+                // Rate labels positioned around the arc
+                ForEach(0..<values.count, id: \.self) { i in
+                    let angle = angleForIndex(i)
+                    let rad = angle * .pi / 180
+                    let labelRadius: CGFloat = knobRadius * 0.58
+                    let x = -cos(rad) * labelRadius
+                    let y = -sin(rad) * labelRadius
+
+                    Text(formatRateShort(values[i]))
+                        .font(.system(size: 8, weight: i == currentIndex ? .bold : .regular, design: .monospaced))
+                        .foregroundColor(i == currentIndex ? .blue : .gray.opacity(0.6))
+                        .position(x: knobRadius + x, y: knobRadius + y)
+                }
+
                 // Track arc
                 Arc(startAngle: .degrees(-startAngle), endAngle: .degrees(-startAngle + totalSweep), clockwise: false)
-                    .stroke(Color.gray.opacity(0.25), lineWidth: 3)
-                    .frame(width: 60, height: 60)
+                    .stroke(Color.gray.opacity(0.2), lineWidth: 3)
+                    .frame(width: knobRadius * 1.1, height: knobRadius * 1.1)
 
                 // Value arc
                 Arc(startAngle: .degrees(-startAngle), endAngle: .degrees(-startAngle + normalizedValue * totalSweep), clockwise: false)
                     .stroke(
                         LinearGradient(colors: [.blue, .purple], startPoint: .leading, endPoint: .trailing),
-                        lineWidth: 3
+                        lineWidth: 3.5
                     )
-                    .frame(width: 60, height: 60)
+                    .frame(width: knobRadius * 1.1, height: knobRadius * 1.1)
 
-                // Snap position tick marks
+                // Tick marks at each snap position
                 ForEach(0..<values.count, id: \.self) { i in
-                    let tickAngle = startAngle - Double(i) / Double(max(values.count - 1, 1)) * totalSweep
+                    let tickAngle = angleForIndex(i)
                     Rectangle()
-                        .fill(i == currentIndex ? Color.blue : Color.gray.opacity(0.5))
-                        .frame(width: 1.5, height: i == currentIndex ? 7 : 5)
-                        .offset(y: -35)
+                        .fill(i == currentIndex ? Color.blue : Color.gray.opacity(0.4))
+                        .frame(width: i == currentIndex ? 2 : 1.5, height: i == currentIndex ? 8 : 6)
+                        .offset(y: -(knobRadius * 0.42))
                         .rotationEffect(.degrees(-tickAngle))
                 }
 
@@ -56,28 +77,28 @@ struct RateKnobView: View {
                 Circle()
                     .fill(
                         RadialGradient(
-                            colors: [Color(white: 0.35), Color(white: 0.15)],
+                            colors: [Color(white: 0.38), Color(white: 0.15)],
                             center: .topLeading,
                             startRadius: 0,
-                            endRadius: 35
+                            endRadius: 40
                         )
                     )
-                    .frame(width: 48, height: 48)
-                    .shadow(color: .black.opacity(0.5), radius: 4, y: 2)
+                    .frame(width: 52, height: 52)
+                    .shadow(color: .black.opacity(0.6), radius: 4, y: 2)
 
-                // Pointer
+                // Pointer line
                 Capsule()
                     .fill(Color.white.opacity(0.9))
-                    .frame(width: 2.5, height: 14)
-                    .offset(y: -13)
+                    .frame(width: 2.5, height: 16)
+                    .offset(y: -15)
                     .rotationEffect(pointerAngle)
             }
-            .frame(width: 76, height: 76)
+            .frame(width: knobRadius * 2, height: knobRadius * 2)
             .gesture(
                 DragGesture(minimumDistance: 2)
                     .onChanged { drag in
-                        if drag.translation.height == 0 { dragStartIndex = currentIndex }
-                        let delta = Int(-drag.translation.height / 30)
+                        if abs(drag.translation.height) < 2 { dragStartIndex = currentIndex }
+                        let delta = Int(-drag.translation.height / 25)
                         let newIndex = min(values.count - 1, max(0, dragStartIndex + delta))
                         value = values[newIndex]
                     }
@@ -89,23 +110,24 @@ struct RateKnobView: View {
             // Clickable value — opens dropdown
             Button(action: { showDropdown.toggle() }) {
                 Text(formatRate(value))
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
                     .foregroundColor(.white.opacity(0.8))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
                     .background(
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(Color.white.opacity(0.06))
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.white.opacity(0.07))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
+                            )
                     )
             }
             .buttonStyle(.plain)
             .popover(isPresented: $showDropdown) {
                 VStack(spacing: 0) {
                     ForEach(values, id: \.self) { rate in
-                        Button(action: {
-                            value = rate
-                            showDropdown = false
-                        }) {
+                        Button(action: { value = rate; showDropdown = false }) {
                             HStack {
                                 Text(formatRate(rate))
                                     .font(.system(size: 13, design: .monospaced))
@@ -121,10 +143,7 @@ struct RateKnobView: View {
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-
-                        if rate != values.last {
-                            Divider()
-                        }
+                        if rate != values.last { Divider() }
                     }
                 }
                 .frame(width: 140)
@@ -136,10 +155,15 @@ struct RateKnobView: View {
     private func formatRate(_ rate: Int) -> String {
         let thousands = rate / 1000
         let remainder = (rate % 1000) / 100
-        if remainder == 0 {
-            return "\(thousands)k"
-        }
+        if remainder == 0 { return "\(thousands)k" }
         return "\(thousands).\(remainder)k"
+    }
+
+    private func formatRateShort(_ rate: Int) -> String {
+        let thousands = rate / 1000
+        let remainder = (rate % 1000) / 100
+        if remainder == 0 { return "\(thousands)" }
+        return "\(thousands).\(remainder)"
     }
 }
 
