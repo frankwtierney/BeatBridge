@@ -12,11 +12,6 @@ from barbridge.constants import WINDOW_HEIGHT, WINDOW_TITLE, WINDOW_WIDTH
 from barbridge.core.cache import cache_file_count, purge_all, purge_stale_files
 from barbridge.core.pipeline import ProcessingResult, process_file
 from barbridge.ui.controls import SyncControls
-from barbridge.ui.drop_zone import (
-    create_drop_zone,
-    set_drop_zone_error,
-    set_drop_zone_ready,
-)
 from barbridge.ui.export_handle import ExportHandle
 from barbridge.ui.status import StatusPanel
 from barbridge.utils.ffmpeg import check_ffmpeg
@@ -48,10 +43,24 @@ def _main(page: ft.Page) -> None:
     export_handle = ExportHandle(page=page)
     controls = SyncControls()
 
+    # Drop zone visual elements
+    dz_icon = ft.Icon(ft.Icons.AUDIO_FILE, size=48, color=ft.Colors.GREY_400)
+    dz_status = ft.Text(
+        "Select a .wav, .aif, or .mid file",
+        size=16,
+        weight=ft.FontWeight.W_500,
+        text_align=ft.TextAlign.CENTER,
+        color=ft.Colors.GREY_400,
+    )
+
     def on_file_dropped(file_path: Path) -> None:
-        """Handle a file dropped into the drop zone from Logic, Finder, etc."""
+        """Handle a file selected via Browse."""
         export_handle.hide()
         status_panel.reset()
+
+        dz_status.value = f"Processing: {file_path.name}"
+        dz_status.color = ft.Colors.AMBER_300
+        dz_icon.color = ft.Colors.AMBER_300
 
         config = SessionConfig(
             bpm=controls.bpm,
@@ -79,20 +88,21 @@ def _main(page: ft.Page) -> None:
         threading.Thread(target=do_process, daemon=True).start()
 
     def _on_complete(result: ProcessingResult) -> None:
-        set_drop_zone_ready(dz_container, dz_status, dz_icon, result.output_path.name)
+        dz_status.value = f"Ready: {result.output_path.name}"
+        dz_status.color = ft.Colors.GREEN_400
+        dz_icon.color = ft.Colors.GREEN_400
+        dz_icon.name = ft.Icons.CHECK_CIRCLE
         status_panel.set_details(result.summary)
         export_handle.show(result.output_path)
 
     def _on_error(message: str) -> None:
-        set_drop_zone_error(dz_container, dz_status, dz_icon, "Processing failed")
+        dz_status.value = "Processing failed"
+        dz_status.color = ft.Colors.RED_400
+        dz_icon.color = ft.Colors.RED_400
+        dz_icon.name = ft.Icons.ERROR
         status_panel.set_error(message)
 
-    # Create the OS-level drop zone (receives files from Logic, Finder, etc.)
-    dropzone, dz_status, dz_icon, dz_container = create_drop_zone(
-        on_file_dropped=on_file_dropped,
-    )
-
-    # Browse button with async file picker (Flet 0.84+ API)
+    # Browse button with async file picker
     async def browse_clicked(_):
         files = await ft.FilePicker().pick_files(
             dialog_title="Select audio file",
@@ -101,10 +111,27 @@ def _main(page: ft.Page) -> None:
         if files:
             on_file_dropped(Path(files[0].path))
 
-    browse_button = ft.TextButton(
-        "or Browse Files",
-        icon=ft.Icons.FOLDER_OPEN,
-        on_click=browse_clicked,
+    drop_zone = ft.Container(
+        content=ft.Column(
+            [
+                dz_icon,
+                dz_status,
+                ft.ElevatedButton(
+                    "Browse Files",
+                    icon=ft.Icons.FOLDER_OPEN,
+                    on_click=browse_clicked,
+                ),
+            ],
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            alignment=ft.MainAxisAlignment.CENTER,
+            spacing=12,
+        ),
+        width=420,
+        height=180,
+        border=ft.Border.all(width=2, color=ft.Colors.GREY_600),
+        border_radius=12,
+        alignment=ft.Alignment(0, 0),
+        bgcolor=ft.Colors.with_opacity(0.05, ft.Colors.WHITE),
     )
 
     # Dependency status
@@ -161,8 +188,7 @@ def _main(page: ft.Page) -> None:
                 ft.Divider(height=1, color=ft.Colors.GREY_800),
                 controls.build(),
                 ft.Divider(height=1, color=ft.Colors.GREY_800),
-                dropzone,
-                browse_button,
+                drop_zone,
                 status_panel.build(),
                 export_handle.build(),
                 ft.Divider(height=1, color=ft.Colors.GREY_800),
