@@ -37,7 +37,7 @@ class SyncControls:
             value="4/4",
             width=100,
             options=time_sig_options,
-            on_change=self._handle_change,
+            on_select=self._handle_change,
         )
 
         sr_options = [
@@ -48,7 +48,7 @@ class SyncControls:
             value=str(DEFAULT_SAMPLE_RATE),
             width=140,
             options=sr_options,
-            on_change=self._handle_change,
+            on_select=self._handle_change,
         )
 
         self.start_time_field = ft.TextField(
