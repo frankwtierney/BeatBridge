@@ -16,6 +16,7 @@ targets:
       - path: BarBridge
     settings:
       base:
+        GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSUIElement: false
         PRODUCT_BUNDLE_IDENTIFIER: com.barbridge.app
         PRODUCT_NAME: BarBridge
