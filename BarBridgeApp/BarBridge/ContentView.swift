@@ -80,13 +80,9 @@ struct ContentView: View {
                 fileList.padding(.top, 6)
             }
         }
-        .padding(10)
         .frame(width: 900)
         .onAppear {
             engine.checkDependencies()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                NSApplication.shared.windows.first?.level = .floating
-            }
         }
     }
 
