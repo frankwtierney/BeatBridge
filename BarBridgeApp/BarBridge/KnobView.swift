@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Rotary knob that snaps to fixed rate positions with labels around the arc,
-/// like a compressor ratio knob.
+/// Rotary knob that snaps to fixed rate positions with labels at each tick,
+/// like a compressor ratio knob. No progress arc — just pointer + ticks.
 struct RateKnobView: View {
     let label: String
     @Binding var value: Int
@@ -15,7 +15,7 @@ struct RateKnobView: View {
 
     private let startAngle: Double = 225
     private let totalSweep: Double = 270
-    private let knobRadius: CGFloat = 70
+    private let knobRadius: CGFloat = 50
 
     private func angleForIndex(_ i: Int) -> Double {
         guard values.count > 1 else { return startAngle }
@@ -32,7 +32,7 @@ struct RateKnobView: View {
     }
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 2) {
             RackLabel(text: label)
 
             ZStack {
@@ -40,36 +40,28 @@ struct RateKnobView: View {
                 ForEach(0..<values.count, id: \.self) { i in
                     let angle = angleForIndex(i)
                     let rad = angle * .pi / 180
-                    let labelRadius: CGFloat = knobRadius * 0.58
-                    let x = -cos(rad) * labelRadius
-                    let y = -sin(rad) * labelRadius
+                    let labelR: CGFloat = knobRadius * 0.82
+                    let x = -cos(rad) * labelR
+                    let y = -sin(rad) * labelR
 
                     Text(formatRateShort(values[i]))
-                        .font(.system(size: 8, weight: i == currentIndex ? .bold : .regular, design: .monospaced))
-                        .foregroundColor(i == currentIndex ? .blue : .gray.opacity(0.6))
+                        .font(.system(size: 9, weight: i == currentIndex ? .bold : .regular, design: .monospaced))
+                        .foregroundColor(i == currentIndex ? .white : .gray.opacity(0.5))
                         .position(x: knobRadius + x, y: knobRadius + y)
                 }
 
-                // Track arc
+                // Track arc (subtle, no fill/progress)
                 Arc(startAngle: .degrees(-startAngle), endAngle: .degrees(-startAngle + totalSweep), clockwise: false)
-                    .stroke(Color.gray.opacity(0.2), lineWidth: 3)
-                    .frame(width: knobRadius * 1.1, height: knobRadius * 1.1)
-
-                // Value arc
-                Arc(startAngle: .degrees(-startAngle), endAngle: .degrees(-startAngle + normalizedValue * totalSweep), clockwise: false)
-                    .stroke(
-                        LinearGradient(colors: [.blue, .purple], startPoint: .leading, endPoint: .trailing),
-                        lineWidth: 3.5
-                    )
-                    .frame(width: knobRadius * 1.1, height: knobRadius * 1.1)
+                    .stroke(Color.gray.opacity(0.15), lineWidth: 2)
+                    .frame(width: knobRadius * 0.88, height: knobRadius * 0.88)
 
                 // Tick marks at each snap position
                 ForEach(0..<values.count, id: \.self) { i in
                     let tickAngle = angleForIndex(i)
                     Rectangle()
-                        .fill(i == currentIndex ? Color.blue : Color.gray.opacity(0.4))
+                        .fill(i == currentIndex ? Color.white : Color.gray.opacity(0.4))
                         .frame(width: i == currentIndex ? 2 : 1.5, height: i == currentIndex ? 8 : 6)
-                        .offset(y: -(knobRadius * 0.42))
+                        .offset(y: -(knobRadius * 0.34))
                         .rotationEffect(.degrees(-tickAngle))
                 }
 
@@ -80,17 +72,17 @@ struct RateKnobView: View {
                             colors: [Color(white: 0.38), Color(white: 0.15)],
                             center: .topLeading,
                             startRadius: 0,
-                            endRadius: 40
+                            endRadius: 30
                         )
                     )
-                    .frame(width: 52, height: 52)
+                    .frame(width: 42, height: 42)
                     .shadow(color: .black.opacity(0.6), radius: 4, y: 2)
 
                 // Pointer line
                 Capsule()
                     .fill(Color.white.opacity(0.9))
-                    .frame(width: 2.5, height: 16)
-                    .offset(y: -15)
+                    .frame(width: 2.5, height: 14)
+                    .offset(y: -12)
                     .rotationEffect(pointerAngle)
             }
             .frame(width: knobRadius * 2, height: knobRadius * 2)
@@ -113,7 +105,7 @@ struct RateKnobView: View {
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
                     .foregroundColor(.white.opacity(0.8))
                     .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 3)
                     .background(
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.white.opacity(0.07))
