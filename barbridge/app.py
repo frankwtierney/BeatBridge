@@ -9,10 +9,15 @@ import flet as ft
 
 from barbridge.config import SessionConfig
 from barbridge.constants import WINDOW_HEIGHT, WINDOW_TITLE, WINDOW_WIDTH
-from barbridge.core.cache import cache_file_count, cache_size_bytes, purge_all, purge_stale_files
+from barbridge.core.cache import cache_file_count, purge_all, purge_stale_files
 from barbridge.core.pipeline import ProcessingResult, process_file
 from barbridge.ui.controls import SyncControls
-from barbridge.ui.drop_zone import DropZone
+from barbridge.ui.drop_zone import (
+    create_drop_zone,
+    reset_drop_zone,
+    set_drop_zone_error,
+    set_drop_zone_ready,
+)
 from barbridge.ui.export_handle import ExportHandle
 from barbridge.ui.status import StatusPanel
 from barbridge.utils.ffmpeg import check_ffmpeg
@@ -45,7 +50,7 @@ def _main(page: ft.Page) -> None:
     controls = SyncControls()
 
     def on_file_dropped(file_path: Path) -> None:
-        """Handle a file dropped into the drop zone."""
+        """Handle a file dropped into the drop zone from Logic, Finder, etc."""
         export_handle.hide()
         status_panel.reset()
 
@@ -75,17 +80,20 @@ def _main(page: ft.Page) -> None:
         threading.Thread(target=do_process, daemon=True).start()
 
     def _on_complete(result: ProcessingResult) -> None:
-        drop_zone.set_ready(result.output_path.name)
+        set_drop_zone_ready(dz_container, dz_status, dz_icon, result.output_path.name)
         status_panel.set_details(result.summary)
         export_handle.show(result.output_path)
 
     def _on_error(message: str) -> None:
-        drop_zone.set_error("Processing failed")
+        set_drop_zone_error(dz_container, dz_status, dz_icon, "Processing failed")
         status_panel.set_error(message)
 
-    drop_zone = DropZone(on_file_dropped=on_file_dropped)
+    # Create the OS-level drop zone (receives files from Logic, Finder, etc.)
+    dropzone, dz_status, dz_icon, dz_container = create_drop_zone(
+        on_file_dropped=on_file_dropped,
+    )
 
-    # File picker for non-drag-and-drop fallback
+    # File picker for browse-button fallback
     file_picker = ft.FilePicker(
         on_result=lambda e: (
             on_file_dropped(Path(e.files[0].path))
@@ -123,8 +131,8 @@ def _main(page: ft.Page) -> None:
     config = SessionConfig()
 
     def purge_cache(_: ft.ControlEvent) -> None:
-        removed = purge_all(config.cache_dir)
-        cache_label.value = f"Cache: 0 files"
+        purge_all(config.cache_dir)
+        cache_label.value = "Cache: 0 files"
         page.update()
 
     cache_count = cache_file_count(config.cache_dir)
@@ -162,8 +170,8 @@ def _main(page: ft.Page) -> None:
                 controls,
                 ft.Divider(height=1, color=ft.Colors.GREY_800),
 
-                # Drop Zone
-                drop_zone,
+                # Drop Zone (OS-level — receives files from Logic, Finder, etc.)
+                dropzone,
                 browse_button,
 
                 # Status
