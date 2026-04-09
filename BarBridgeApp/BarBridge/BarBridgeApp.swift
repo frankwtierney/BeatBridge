@@ -31,8 +31,9 @@ struct TransparentWindow: NSViewRepresentable {
             window.styleMask.insert(.fullSizeContentView)
             window.styleMask.remove(.resizable)
             window.isMovableByWindowBackground = true
-            window.level = .floating
+            window.level = .statusBar
             window.titlebarSeparatorStyle = .none
+            window.collectionBehavior = [.canJoinAllSpaces, .stationary]
         }
         return view
     }
