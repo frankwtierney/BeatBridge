@@ -25,7 +25,7 @@ from barbridge.utils.permissions import get_permission_status_message, is_macos
 
 def run_app() -> None:
     """Launch the BarBridge GUI application."""
-    ft.run(target=_main)
+    ft.run(_main)
 
 
 def _main(page: ft.Page) -> None:
