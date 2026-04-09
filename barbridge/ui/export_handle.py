@@ -2,21 +2,18 @@
 
 from __future__ import annotations
 
+import platform
+import subprocess
 from pathlib import Path
 
 import flet as ft
 
 
-class ExportHandle(ft.UserControl):
-    """A draggable handle that appears after processing.
+class ExportHandle:
+    """A handle that appears after processing with Reveal and Copy Path buttons."""
 
-    Users drag this handle into Reaper (or any DAW) to import the
-    processed, bar-aligned file. Also provides a "Reveal in Finder"
-    button and a "Copy Path" button for flexibility.
-    """
-
-    def __init__(self):
-        super().__init__()
+    def __init__(self, page: ft.Page | None = None):
+        self._page = page
         self._output_path: Path | None = None
         self._filename_text = ft.Text(
             "",
@@ -42,9 +39,6 @@ class ExportHandle(ft.UserControl):
             icon_color=ft.Colors.GREY_400,
             on_click=self._copy_path,
         )
-        self._container: ft.Container | None = None
-
-    def build(self) -> ft.Control:
         self._container = ft.Container(
             content=ft.Row(
                 [
@@ -72,47 +66,31 @@ class ExportHandle(ft.UserControl):
             width=420,
         )
 
-        return ft.Draggable(
-            content=self._container,
-        )
+    def build(self) -> ft.Control:
+        return self._container
 
     def show(self, output_path: Path) -> None:
-        """Make the handle visible with the processed file path."""
         self._output_path = output_path
         self._filename_text.value = output_path.name
-        if self._container:
-            self._container.visible = True
-        self.update()
+        self._container.visible = True
+        self._filename_text.update()
+        self._container.update()
 
     def hide(self) -> None:
-        """Hide the export handle."""
         self._output_path = None
-        if self._container:
-            self._container.visible = False
-        self.update()
+        self._container.visible = False
+        self._container.update()
 
     def _reveal_in_finder(self, e: ft.ControlEvent) -> None:
-        """Open the containing folder in Finder/file manager."""
         if self._output_path and self._output_path.exists():
-            import subprocess
-            import platform
-
             if platform.system() == "Darwin":
                 subprocess.run(["open", "-R", str(self._output_path)])
             elif platform.system() == "Linux":
                 subprocess.run(["xdg-open", str(self._output_path.parent)])
 
     def _copy_path(self, e: ft.ControlEvent) -> None:
-        """Copy the output file path to clipboard."""
-        if self._output_path and self.page:
-            self.page.set_clipboard(str(self._output_path))
-            # Brief visual feedback
+        if self._output_path and self._page:
+            self._page.set_clipboard(str(self._output_path))
             self._copy_button.icon = ft.Icons.CHECK
             self._copy_button.icon_color = ft.Colors.GREEN_400
-            self.update()
-
-            import time
-            time.sleep(0.8)
-            self._copy_button.icon = ft.Icons.COPY
-            self._copy_button.icon_color = ft.Colors.GREY_400
-            self.update()
+            self._copy_button.update()

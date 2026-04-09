@@ -14,7 +14,6 @@ from barbridge.core.pipeline import ProcessingResult, process_file
 from barbridge.ui.controls import SyncControls
 from barbridge.ui.drop_zone import (
     create_drop_zone,
-    reset_drop_zone,
     set_drop_zone_error,
     set_drop_zone_ready,
 )
@@ -46,7 +45,7 @@ def _main(page: ft.Page) -> None:
 
     # Build UI components
     status_panel = StatusPanel()
-    export_handle = ExportHandle()
+    export_handle = ExportHandle(page=page)
     controls = SyncControls()
 
     def on_file_dropped(file_path: Path) -> None:
@@ -167,7 +166,7 @@ def _main(page: ft.Page) -> None:
                 ft.Divider(height=1, color=ft.Colors.GREY_800),
 
                 # Controls
-                controls,
+                controls.build(),
                 ft.Divider(height=1, color=ft.Colors.GREY_800),
 
                 # Drop Zone (OS-level — receives files from Logic, Finder, etc.)
@@ -175,10 +174,10 @@ def _main(page: ft.Page) -> None:
                 browse_button,
 
                 # Status
-                status_panel,
+                status_panel.build(),
 
                 # Export Handle
-                export_handle,
+                export_handle.build(),
 
                 ft.Divider(height=1, color=ft.Colors.GREY_800),
 

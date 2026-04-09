@@ -5,11 +5,10 @@ from __future__ import annotations
 import flet as ft
 
 
-class StatusPanel(ft.UserControl):
+class StatusPanel:
     """Displays real-time processing status with a progress bar and detail text."""
 
     def __init__(self):
-        super().__init__()
         self._progress_bar = ft.ProgressBar(
             width=400,
             value=0,
@@ -53,12 +52,6 @@ class StatusPanel(ft.UserControl):
         )
 
     def set_progress(self, stage: str, value: float) -> None:
-        """Update the progress bar and stage label.
-
-        Args:
-            stage: Current processing stage name.
-            value: Progress from 0.0 to 1.0.
-        """
         self._progress_bar.value = value
         self._stage_text.value = stage
 
@@ -71,29 +64,34 @@ class StatusPanel(ft.UserControl):
         else:
             self._indicator.bgcolor = ft.Colors.GREY_600
 
-        self.update()
+        self._progress_bar.update()
+        self._stage_text.update()
+        self._indicator.update()
 
     def set_details(self, text: str) -> None:
-        """Show processing details (file info, alignment summary, etc.)."""
         self._detail_text.value = text
-        self.update()
+        self._detail_text.update()
 
     def set_error(self, message: str) -> None:
-        """Show an error state."""
         self._indicator.bgcolor = ft.Colors.RED_400
         self._progress_bar.color = ft.Colors.RED_400
         self._progress_bar.value = 1.0
         self._stage_text.value = "Error"
         self._stage_text.color = ft.Colors.RED_400
         self._detail_text.value = message
-        self.update()
+        self._progress_bar.update()
+        self._stage_text.update()
+        self._indicator.update()
+        self._detail_text.update()
 
     def reset(self) -> None:
-        """Reset to idle state."""
         self._progress_bar.value = 0
         self._progress_bar.color = ft.Colors.BLUE_400
         self._indicator.bgcolor = ft.Colors.GREY_600
         self._stage_text.value = "Ready"
         self._stage_text.color = ft.Colors.GREY_400
         self._detail_text.value = ""
-        self.update()
+        self._progress_bar.update()
+        self._stage_text.update()
+        self._indicator.update()
+        self._detail_text.update()

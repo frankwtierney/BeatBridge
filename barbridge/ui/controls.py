@@ -14,18 +14,10 @@ from barbridge.constants import (
 )
 
 
-class SyncControls(ft.UserControl):
-    """Panel of user-adjustable session parameters.
-
-    Provides input fields for:
-    - BPM (numeric text field)
-    - Time Signature (dropdown)
-    - Destination Sample Rate (dropdown)
-    - Clip Start Time (bar.beat or seconds)
-    """
+class SyncControls:
+    """Panel of user-adjustable session parameters."""
 
     def __init__(self, on_change: Callable[[], None] | None = None):
-        super().__init__()
         self._on_change = on_change
 
         self.bpm_field = ft.TextField(
