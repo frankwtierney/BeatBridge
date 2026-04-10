@@ -86,6 +86,7 @@ struct ContentView: View {
         }
         .frame(width: 900)
         .onAppear {
+            engine.ensureModuleInstalled()
             engine.checkDependencies()
         }
     }

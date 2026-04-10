@@ -5,11 +5,16 @@ class ProcessingEngine: ObservableObject {
     @Published var files: [ProcessedFile] = []
     @Published var ffmpegVersion: String? = nil
 
+    private static let appSupportDir: String = {
+        let path = NSHomeDirectory() + "/Library/Application Support/BarBridge"
+        try? FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
+        return path
+    }()
+
     // Path to the Python venv's python binary
-    // Adjust this if your venv is elsewhere
     private var pythonPath: String {
-        // Look for the venv in the BeatBridge project directory
         let candidates = [
+            Self.appSupportDir + "/venv/bin/python3",
             NSHomeDirectory() + "/Desktop/BeatBridge/venv/bin/python3",
             "/opt/homebrew/bin/python3.12",
             "/opt/homebrew/bin/python3",
@@ -20,13 +25,13 @@ class ProcessingEngine: ObservableObject {
     }
 
     private var barbridgeModule: String {
-        // Path to the barbridge package
         let candidates = [
+            Self.appSupportDir,
             NSHomeDirectory() + "/Desktop/BeatBridge",
         ]
         return candidates.first {
             FileManager.default.fileExists(atPath: $0 + "/barbridge/__main__.py")
-        } ?? NSHomeDirectory() + "/Desktop/BeatBridge"
+        } ?? Self.appSupportDir
     }
 
     private let ffmpegPath: String = {
@@ -37,6 +42,29 @@ class ProcessingEngine: ObservableObject {
         ]
         return candidates.first { FileManager.default.fileExists(atPath: $0) } ?? "ffmpeg"
     }()
+
+    /// Copies the barbridge Python module to Application Support if not already there.
+    func ensureModuleInstalled() {
+        let destModule = Self.appSupportDir + "/barbridge"
+        let destVenv = Self.appSupportDir + "/venv"
+
+        // If already set up in App Support, nothing to do
+        if FileManager.default.fileExists(atPath: destModule + "/__main__.py") &&
+           FileManager.default.fileExists(atPath: destVenv + "/bin/python3") {
+            return
+        }
+
+        // Copy from Desktop/BeatBridge if it exists
+        let source = NSHomeDirectory() + "/Desktop/BeatBridge"
+        let fm = FileManager.default
+
+        if fm.fileExists(atPath: source + "/barbridge/__main__.py") {
+            try? fm.copyItem(atPath: source + "/barbridge", toPath: destModule)
+        }
+        if fm.fileExists(atPath: source + "/venv") {
+            try? fm.copyItem(atPath: source + "/venv", toPath: destVenv)
+        }
+    }
 
     func checkDependencies() {
         // Check FFmpeg using direct path

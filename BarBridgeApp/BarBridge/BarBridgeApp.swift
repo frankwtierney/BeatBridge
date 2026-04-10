@@ -57,7 +57,7 @@ struct TransparentWindow: NSViewRepresentable {
         window.styleMask.insert(.miniaturizable)
         window.styleMask.insert(.fullSizeContentView)
         window.styleMask.remove(.resizable)
-        window.isMovableByWindowBackground = true
+        window.isMovableByWindowBackground = false
         window.level = alwaysOnTopLevel
         window.titlebarSeparatorStyle = .none
         window.collectionBehavior = [.canJoinAllSpaces, .stationary]
