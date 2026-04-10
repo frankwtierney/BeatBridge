@@ -47,8 +47,8 @@ struct TransparentWindow: NSViewRepresentable {
 
     /// One-time window configuration.
     static func configureWindow(_ window: NSWindow) {
-        window.isOpaque = false
-        window.backgroundColor = .clear
+        window.isOpaque = true
+        window.backgroundColor = NSColor(white: 0.11, alpha: 1.0)
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         // Keep .titled so traffic lights stay visible
